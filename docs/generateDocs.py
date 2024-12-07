@@ -1266,12 +1266,10 @@ def replace_element(bs4, element, replacement_tag):
 def get_body_content(bs4):
     return_str = ""
     for content in bs4.body.contents:
-        content_utf = unicode(content).encode("utf-8", errors="replace")
-        content_str = content_utf.decode("utf-8", errors="replace")
         if type(content) is Comment:
-            return_str += "<!-- " + content_str + "-->"
+            return_str += "<!-- " + content + "-->"
         else:
-            return_str += content_str
+            return_str += str(content)
     return return_str
 
 
@@ -1713,7 +1711,7 @@ def inject_html(src_content, dest_el, src_path, dest_path):
             if type(content) is Tag:
                 dest_el.append(content)
     except AttributeError as e:
-        log("appending html content to element [ " + e.message + " ]", 2)
+        log("appending html content to element [ " + str(e) + " ]", 2)
 
 
 
@@ -1988,7 +1986,7 @@ def parse_typedefs(bs4, tree, sections):
     if config.is_section_whitelisted(sections, "typedefs"):
         section_config = config.get_section_config(sections, "typedefs")
         if section_config:
-            prefix_blacklist = section_config["prefix_blacklist"] if section_config.has_key("prefix_blacklist") else None
+            prefix_blacklist = section_config["prefix_blacklist"] if "prefix_blacklist" in section_config else None
         else:
             prefix_blacklist = None
 
@@ -2249,7 +2247,7 @@ def fill_namespace_content(tree):
     # return result of special glm namespace content filling
     # TODO: If we get here, that means the namespace is NOT blacklisted, so this is where we check if each piece is whitelisted, if that array is empty, we assume that it's all whitelisted
     ns_config = config.get_ns_config(ns_def.name)
-    if ns_config and ns_config.has_key("structure_whitelist"):
+    if ns_config and "structure_whitelist" in ns_config:
         sections = ns_config["structure_whitelist"]
     else:
         sections = None
@@ -2376,7 +2374,7 @@ def process_html_file(in_path, out_path):
     - Save html in destination dir
     """
 #    log_progress('Processing file: ' + str(in_path))
-    print 'Processing file: ' + str(in_path)
+    print(f"Processing file: {str(in_path)}")
     # relative path in relation to the in_path (htmlsrc/)
     local_rel_path = os.path.relpath(in_path, HTML_SOURCE_PATH)
     # directory name of the path
@@ -2746,8 +2744,7 @@ def process_ci_prefix_tag(bs4, tag, in_path):
         # get tag content
         prefix_content = ""
         for c in tag.contents:
-            content = c.encode("utf-8", errors="replace")
-            prefix_content += content
+            prefix_content += str(c)
 
         # generate bs4 from content and update links as reltive from the template path
         # could alternatively set the absolute paths of content, which would then be turned into rel paths later
@@ -2757,8 +2754,7 @@ def process_ci_prefix_tag(bs4, tag, in_path):
         # get updated body content and assign as prefix_content
         prefix_content = ""
         for c in new_bs4.body:
-            content = c.encode("utf-8", errors="replace")
-            prefix_content += content
+            prefix_content += str(c)
 
         obj_ref.define_prefix(prefix_content)
 
@@ -2823,7 +2819,7 @@ def find_ci_tag_ref(link):
 
     except Exception as e:
         log("problem finding ci tag", 1)
-        log(e.message, 1)
+        log(str(e), 1)
         return None
 
     return ref_obj
@@ -2901,8 +2897,8 @@ def relative_url(in_path, link):
 
     index = 0
     SEPARATOR = "/"
-    d = filter(None, in_path.replace('\\', SEPARATOR).split( SEPARATOR ))
-    s = filter(None, link.replace('\\', SEPARATOR).split( SEPARATOR ))
+    d = list(filter(None, in_path.replace('\\', SEPARATOR).split( SEPARATOR )))
+    s = list(filter(None, link.replace('\\', SEPARATOR).split( SEPARATOR )))
 
     # FIND largest substring match
     for i, resource in enumerate( d ):
@@ -2938,9 +2934,9 @@ def update_link_abs(link, in_path):
     backs = 0
     # SPLIT the url into a list of path parts
     r = in_path.split(SEPARATOR)
-    r = filter(None, r)
+    r = list(filter(None, r))
     l = link.split(SEPARATOR)
-    l = filter(None, l)
+    l = list(filter(None, l))
 
     # FIND largest substring match
     for i, resource in enumerate( r ):
@@ -3087,9 +3083,9 @@ def generate_bs4(file_path):
 
     # tree = None
     try:
-        with open(file_path, "rb") as html_file:
-            content = html_file.read().decode("utf-8", errors="replace")
-            new_content = content.encode("utf-8", errors="replace")
+        with open(file_path, "r") as html_file:
+            content = html_file.read()
+            new_content = str(content)
 
         # wrap in body tag if none exists
         if new_content.find("<body") < 0:
@@ -3100,17 +3096,13 @@ def generate_bs4(file_path):
         return bs4
 
     except Exception as e:
-        log(e.message, 2)
+        log(e.args[0], 2)
         return None
 
 
 def generate_bs4_from_string(string):
 
-    # make sure it's a unicode object
-    if type(string) != unicode:
-        output_string = string.decode("utf-8", errors="replace")
-    else:
-        output_string = string
+    output_string = string
 
     # wrap in body tag if none exists
     if string.find("<body") < 0:
@@ -3385,7 +3377,7 @@ def write_html(bs4, save_path):
     # prettify descriptions
     for markup in bs4.find_all("div", "description"):
         if type(markup) is Tag:
-            pretty = BeautifulSoup(markup.prettify())
+            pretty = BeautifulSoup(markup.prettify(), features="html.parser")
             if pretty is not None and markup is not None:
                 markup.replaceWith(pretty)
 
@@ -3394,14 +3386,13 @@ def write_html(bs4, save_path):
         for child in c.children:
             # replaces with escaped code
             try:
-                child_utf = unicode(child).encode("utf-8", errors="replace")
+                child_utf = str(child)
                 child.replace_with(str(child_utf))
             except Exception as e:
                 log("Writing HTML | " + str(e), 2)
 
     # enode bs4, decode, and then re-encode and write
-    document = bs4.encode(formatter="html")
-    document = codecs.decode(document, "utf-8", "xmlcharrefreplace")
+    document = str(bs4)
 
     if not os.path.exists(os.path.dirname(save_path)):
         os.makedirs(os.path.dirname(save_path))
@@ -3410,11 +3401,10 @@ def write_html(bs4, save_path):
 
 def write_search_index():
     # save search index to js file
-    document = "var search_index_data = " + json.dumps(g_search_index).encode('utf-8')
-    # print document
+    document = "var search_index_data = " + json.dumps(str(g_search_index))
     if not os.path.exists(os.path.dirname(HTML_DEST_PATH + 'search_index.js')):
         os.makedirs(os.path.dirname(HTML_DEST_PATH + 'search_index.js'))
-    with codecs.open(HTML_DEST_PATH + 'search_index.js', "w", "UTF-8") as outFile:
+    with codecs.open(HTML_DEST_PATH + 'search_index.js', "w") as outFile:
         outFile.write(document)
 
 def add_to_search_index(html, save_path, search_type, tags=[]):
