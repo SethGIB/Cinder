@@ -7,7 +7,7 @@ import sys
 
 from os.path import join, getsize
 
-print "Deleting " + sys.argv[2]
+print( f"Deleting {sys.argv[2]}")
 
 for root, dirs, files in os.walk(sys.argv[1]):
     for name in files:
@@ -20,8 +20,8 @@ for root, dirs, files in os.walk(sys.argv[1]):
         f.seek( 0, os.SEEK_SET )
         for line in fileLines:
             if line.find( sys.argv[2] ) != -1:
-                print "Deleting line in " + str(join(root,name))
-                print line
+                print(f"Deleting line in {str(join(root,name))}")
+                print(line)
             else:
                 f.write( line )
         f.close()

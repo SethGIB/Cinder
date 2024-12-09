@@ -21,4 +21,4 @@ for root, dirs, files in os.walk(sys.argv[1]):
     if '.svn' in dirs:
         dirs.remove('.svn')  # don't visit CVS directories
 
-print "Total lines: " + str(total)
+print(f"Total lines: {str(total)}")

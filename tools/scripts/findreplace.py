@@ -6,7 +6,7 @@ import sys
 
 from os.path import join, getsize
 
-print "Replacing " + sys.argv[2] + " with " + sys.argv[3]
+print(f"Replacing {sys.argv[2]}  with {sys.argv[3]}")
 
 for root, dirs, files in os.walk(sys.argv[1]):
     for name in files:
@@ -20,8 +20,8 @@ for root, dirs, files in os.walk(sys.argv[1]):
         for line in fileLines:
             replaced = line.replace( sys.argv[2], sys.argv[3] )
             if replaced != line:
-                print "Replaced line in " + str(join(root,name))
-                print replaced
+                print(f"Replaced line in {str(join(root,name))}")
+                print(replaced)
             f.write( replaced )
     if '.svn' in dirs:
         dirs.remove('.svn')  # don't visit CVS directories

@@ -2,7 +2,6 @@ import os
 import fnmatch
 import sys
 import shutil
-from distutils import dir_util
 
 if len(sys.argv) != 2:
     print("Usage:\npython retarget_vs_projects.py [directory]\n  Ex: python retargetVSProject.py samples")
@@ -35,7 +34,7 @@ for root, dirs, files in os.walk(START_DIR):
         if MODIFY_IN_PLACE:
             vcPathNewRelative = vcPathOldRelative
         else:
-            dir_util.copy_tree(vcPathOldRelative, vcPathNewRelative)
+            shutil.copytree(vcPathOldRelative, vcPathNewRelative)
 
         # find .vcxproj file in new vc dir
         vcxprojFilePath = ''
@@ -45,11 +44,11 @@ for root, dirs, files in os.walk(START_DIR):
                 break
 
         if vcxprojFilePath == '':
-            print("could not find .vcxproj file in directory: " + vcPathNewRelative + ", skipping.")
+            print(f"could not find .vcxproj file in directory: {vcPathNewRelative}, skipping.")
             continue
 
         vcxprojFilePath = os.path.abspath(vcxprojFilePath)
-        print("vcxproj file: " + vcxprojFilePath)
+        print(f"vcxproj file: {vcxprojFilePath}")
 
         # run devenv program
         if RUN_DEVENV:

@@ -52,20 +52,20 @@ def copyIgnore( path, names ):
     return result
 
 def printUsage():
-    print "Run from the root of the repository (having run vcvars):"
-    print "python tools/packageRelease.py (version number) (xcode|vc2013|vc2015)"
+    print("Run from the root of the repository (having run vcvars):")
+    print("python tools/packageRelease.py (version number) (xcode|vc2013|vc2015)")
 
 def processExport( outputName, compilerName, version ):
-    print "creating a clean clone of cinder"
+    print("creating a clean clone of cinder")
     baseDir = os.getcwd()
     fileUrl = "file://" + baseDir
     fileUrl.replace( os.sep, "/" )
     os.system( "git clone --recursive --depth 1 -b master " + fileUrl + " .." + os.sep + "cinder_temp" )
     os.chdir( baseDir + os.sep + ".." + os.sep + "cinder_temp" )
     outputDir = baseDir + os.sep + ".." + os.sep + "cinder_" + version + "_" + outputName + os.sep
-    print "performing selective copy to " + outputDir
+    print("performing selective copy to {outputDir}")
     shutil.copytree( ".", outputDir, ignore=copyIgnore )
-    print "removing test"
+    print("removing test")
     shutil.rmtree( outputDir + "test" )
     return outputDir
     
@@ -125,5 +125,35 @@ elif sys.argv[2] == 'vc2015':
     shutil.rmtree( outputDir + "vc2013\\x64\\Release" )
     cleanupMswLibDir( outputDir + "lib\\msw\\x86" )
     cleanupMswLibDir( outputDir + "lib\\msw\\x64" )
+elif sys.argv[2] == 'vc2019':
+    gCompiler = 'vc2019'
+    gPlatform = 'msw'
+    outputDir = processExport( "vc2019", "vc2019", sys.argv[1] )
+    os.chdir( outputDir + "vc2013" )
+    os.system( "msbuild cinder.vcxproj /p:platform=win32 /p:configuration=debug" )
+    shutil.rmtree( outputDir + "vc2013\\Debug" )
+    os.system( "msbuild cinder.vcxproj /p:platform=win32 /p:configuration=release" )
+    shutil.rmtree( outputDir + "vc2013\\Release" )
+    os.system( "msbuild cinder.vcxproj /p:platform=x64 /p:configuration=debug" )
+    shutil.rmtree( outputDir + "vc2013\\x64\\Debug" )
+    os.system( "msbuild cinder.vcxproj /p:platform=x64 /p:configuration=release" )
+    shutil.rmtree( outputDir + "vc2013\\x64\\Release" )
+    cleanupMswLibDir( outputDir + "lib\\msw\\x86" )
+    cleanupMswLibDir( outputDir + "lib\\msw\\x64" )
+elif sys.argv[2] == 'vc2022':
+    gCompiler = 'vc2022'
+    gPlatform = 'msw'
+    outputDir = processExport( "vc2022", "vc2022", sys.argv[1] )
+    os.chdir( outputDir + "vc2013" )
+    os.system( "msbuild cinder.vcxproj /p:platform=win32 /p:configuration=debug" )
+    shutil.rmtree( outputDir + "vc2013\\Debug" )
+    os.system( "msbuild cinder.vcxproj /p:platform=win32 /p:configuration=release" )
+    shutil.rmtree( outputDir + "vc2013\\Release" )
+    os.system( "msbuild cinder.vcxproj /p:platform=x64 /p:configuration=debug" )
+    shutil.rmtree( outputDir + "vc2013\\x64\\Debug" )
+    os.system( "msbuild cinder.vcxproj /p:platform=x64 /p:configuration=release" )
+    shutil.rmtree( outputDir + "vc2013\\x64\\Release" )
+    cleanupMswLibDir( outputDir + "lib\\msw\\x86" )
+    cleanupMswLibDir( outputDir + "lib\\msw\\x64" )    
 else:
     printUsage()

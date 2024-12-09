@@ -83,6 +83,6 @@ for root, dirs, files in os.walk(sys.argv[1]):
         for line in fileLines:
             replaced = processLine( line )
             if replaced != line:
-                print "Replaced line in " + str(join(root,name))
-                print replaced
+                print(f"Replaced line in {str(join(root,name))}")
+                print(replaced)
             f.write( replaced )

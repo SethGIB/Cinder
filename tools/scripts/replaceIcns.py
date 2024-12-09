@@ -7,7 +7,7 @@ import sys
 from os.path import join, getsize
 
 icnsAbsolutePath = os.path.abspath( sys.argv[2] )
-print "Replacing icons to be relative to " + icnsAbsolutePath
+print(f"Replacing icons to be relative to {icnsAbsolutePath}")
 
 for root, dirs, files in os.walk(sys.argv[1]):
     for name in files:
@@ -26,11 +26,11 @@ for root, dirs, files in os.walk(sys.argv[1]):
                 end = line.find( ";", start )
                 existingPath = line[start:end]
                 if existingPath.find( "data" ) == -1:
-                    print "Found string " + existingPath
+                    print(f"Found string {existingPath}")
                     line = line.replace( existingPath, icnsRelativePath )
                     existingAbsolutePath = join( join( root, ".." ), existingPath )
                     if os.path.exists( existingAbsolutePath ):
-                        print "Deleting " + existingAbsolutePath
+                        print(f"Deleting {existingAbsolutePath}")
                         os.unlink( existingAbsolutePath )
             f.write( line )
  
